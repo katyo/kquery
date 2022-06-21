@@ -1,0 +1,46 @@
+[package]
+name = "kquery-cli"
+version = "0.1.0"
+description = "Query tool for Linux kernel sources. Command-line interface"
+license = "MIT"
+authors = ["K <kayo@illumium.org>"]
+categories = ["command-line-utilities"]
+keywords = ["linux", "kernel", "query", "kbuild", "kconfig"]
+homepage = "https://github.com/katyo/kquery"
+repository = "https://github.com/katyo/kquery"
+edition = "2021"
+
+[[bin]]
+name = "kquery"
+path = "src/main.rs"
+
+[dependencies.paw]
+version = "1"
+
+[dependencies.structopt]
+version = "0.3"
+features = ["paw"]
+
+[dependencies.lovely_env_logger]
+version = "0.5"
+
+[dependencies.log]
+version = "0.4"
+
+[dependencies.tokio]
+version = "1"
+features = ["macros", "rt-multi-thread"]
+
+[dependencies.kquery]
+path = ".."
+default-features = false
+
+[features]
+default = ["cache", "cbor", "lz4"]
+default-dev = ["cache", "json", "pretty"]
+
+cache = ["kquery/cache"]
+json = ["kquery/json"]
+pretty = ["kquery/pretty"]
+cbor = ["kquery/cbor"]
+lz4 = ["kquery/lz4"]
