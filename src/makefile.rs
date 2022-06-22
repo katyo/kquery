@@ -1,9 +1,9 @@
 use crate::{File, FileMgr, Path, Result};
-use std::collections::HashSet as Set;
+use std::collections::HashMap as Map;
 
 pub struct MakeFile {
     lines: tokio::io::Lines<tokio::io::BufReader<File>>,
-    modules: Set<String>,
+    modules: Map<String, Vec<String>>,
 }
 
 impl MakeFile {
@@ -17,7 +17,7 @@ impl MakeFile {
 
         Ok(Self {
             lines,
-            modules: Set::default(),
+            modules: Map::default(),
         })
     }
 
@@ -42,25 +42,29 @@ impl MakeFile {
             };
 
             match MakeStmt::parse(&line) {
-                Ok(Some(stmt)) => {
-                    match &stmt {
-                        MakeStmt::Var {
-                            prefix, elements, ..
-                        } if ["obj", "lib", "subdir", "core", "drivers"]
+                Ok(Some(mut stmt)) => {
+                    if let MakeStmt::Var {
+                        prefix,
+                        elements,
+                        conditions,
+                    } = &mut stmt
+                    {
+                        if ["obj", "lib", "subdir", "core", "drivers"]
                             .into_iter()
-                            .any(|ent| ent == prefix) =>
+                            .any(|entry| entry == prefix)
                         {
                             for element in elements {
                                 if let Some((module, "")) = element.rsplit_once(".o") {
-                                    self.modules.insert(module.into());
+                                    self.modules.insert(module.into(), conditions.clone());
                                 }
                             }
+                        } else if let Some(module_conditions) = self.modules.get(prefix) {
+                            conditions.extend(module_conditions.clone());
+                        } else {
+                            continue;
                         }
-                        MakeStmt::Var { prefix, .. }
-                            if self.modules.iter().any(|ent| ent == prefix) => {}
-                        MakeStmt::Var { .. } => continue,
-                        _ => {}
                     }
+
                     return Ok(Some(stmt));
                 }
                 Ok(None) => {
@@ -130,6 +134,7 @@ impl MakeStmt {
         let line = line.trim();
 
         if line.is_empty() || line.starts_with('#') {
+            /* skip entry lines and makefile comments */
             return Ok(None);
         }
 
