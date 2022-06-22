@@ -6,6 +6,7 @@ use kquery::{FileMgr, MetaData, Result, SourceData};
 #[paw::main]
 #[tokio::main]
 async fn main(args: Args) -> Result<()> {
+    #[cfg(feature = "lovely_env_logger")]
     lovely_env_logger::init_default();
 
     log::trace!("Cmdline Args: {:?}", args);

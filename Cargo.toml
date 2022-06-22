@@ -41,6 +41,7 @@ optional = true
 
 [dependencies.log]
 version = "0.4"
+features = ["max_level_trace", "release_max_level_off"]
 
 [dependencies.tokio]
 version = "1"
