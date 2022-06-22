@@ -32,6 +32,33 @@ pub enum Cmd {
     #[structopt()]
     Index,
 
+    /// List of processed sources
+    #[structopt()]
+    Sources {
+        #[cfg(feature = "glob")]
+        /// Optional pattern to filter paths
+        #[structopt(name = "glob-pattern")]
+        pattern: Option<String>,
+    },
+
+    /// List of known compatible string
+    #[structopt()]
+    Compats {
+        #[cfg(feature = "glob")]
+        /// Optional pattern to filter strings
+        #[structopt()]
+        pattern: Option<String>,
+    },
+
+    /// List of known configuration options
+    #[structopt()]
+    Configs {
+        #[cfg(feature = "glob")]
+        /// Optional pattern to filter options
+        #[structopt()]
+        pattern: Option<String>,
+    },
+
     /// Query source info by compatible string
     #[structopt()]
     Compat {

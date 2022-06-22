@@ -41,8 +41,54 @@ async fn main(args: Args) -> Result<()> {
                     }
                 }
 
+                fn print_filtered_list<P: AsRef<std::path::Path>, S: AsRef<str>>(
+                    entries: impl Iterator<Item = P>,
+                    pattern: Option<S>,
+                ) -> Result<()> {
+                    #[cfg(feature = "glob")]
+                    let pattern = pattern
+                        .map(|pattern| {
+                            globset::Glob::new(pattern.as_ref()).map(|glob| glob.compile_matcher())
+                        })
+                        .transpose()?;
+
+                    #[cfg(feature = "glob")]
+                    let entries = if let Some(pattern) = &pattern {
+                        either::Either::Left(entries.filter(|path| pattern.is_match(path)))
+                    } else {
+                        either::Either::Right(entries)
+                    };
+
+                    for entry in entries {
+                        println!("{}", entry.as_ref().display());
+                    }
+
+                    Ok(())
+                }
+
                 match cmd {
                     Cmd::Index => unreachable!(),
+
+                    Cmd::Sources {
+                        #[cfg(feature = "glob")]
+                        pattern,
+                    } => {
+                        print_filtered_list(db.sources.keys(), pattern.as_ref())?;
+                    }
+
+                    Cmd::Compats {
+                        #[cfg(feature = "glob")]
+                        pattern,
+                    } => {
+                        print_filtered_list(db.compat_strs.keys(), pattern.as_ref())?;
+                    }
+
+                    Cmd::Configs {
+                        #[cfg(feature = "glob")]
+                        pattern,
+                    } => {
+                        print_filtered_list(db.config_opts.keys(), pattern.as_ref())?;
+                    }
 
                     Cmd::Compat { compat } => {
                         if let Some(compat_data) = db.compat_str(&compat) {

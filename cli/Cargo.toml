@@ -29,6 +29,14 @@ optional = true
 version = "0.4"
 features = ["max_level_trace", "release_max_level_off"]
 
+[dependencies.globset]
+version = "0.4"
+optional = true
+
+[dependencies.either]
+version = "1"
+optional = true
+
 [dependencies.tokio]
 version = "1"
 features = ["macros", "rt-multi-thread"]
@@ -38,8 +46,8 @@ path = ".."
 default-features = false
 
 [features]
-default = ["cache", "cbor", "lz4"]
-default-dev = ["cache", "json", "pretty"]
+default = ["cache", "cbor", "lz4", "logger", "glob"]
+default-dev = ["cache", "json", "pretty", "logger", "glob"]
 
 cache = ["kquery/cache"]
 json = ["kquery/json"]
@@ -48,3 +56,4 @@ cbor = ["kquery/cbor"]
 lz4 = ["kquery/lz4"]
 
 logger = ["lovely_env_logger"]
+glob = ["globset", "either"]
