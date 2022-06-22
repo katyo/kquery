@@ -213,7 +213,7 @@ impl State {
     }
 
     async fn process_dir(&self, tx: Sender<StateOp>) -> Result<()> {
-        let files = ["Makefile", "Kbuild"];
+        let files = ["Kbuild", "Makefile"];
 
         for name in &files {
             let path = self.path.join(name);
@@ -226,7 +226,6 @@ impl State {
 
             if self.filemgr.file_exists(&path).await? {
                 self.process_makefile(&path, &tx).await?;
-                return Ok(());
             }
         }
 
