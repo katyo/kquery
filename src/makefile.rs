@@ -122,9 +122,9 @@ impl MakeStmt {
             .map(|el| el.trim_end_matches('/'))
             .filter(|el| {
                 !el.starts_with('-')
-                    && el
-                        .chars()
-                        .all(|c: char| c.is_alphanumeric() || c == '-' || c == '_' || c == '.')
+                    && el.chars().all(|c: char| {
+                        c.is_alphanumeric() || c == '-' || c == '_' || c == '.' || c == '/'
+                    })
             })
             .map(String::from)
             .collect()
