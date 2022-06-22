@@ -22,6 +22,33 @@ async fn main(args: Args) -> Result<()> {
             db.save_cache(&filemgr).await?;
 
             println!("Done!");
+
+            #[cfg(feature = "alert-orphan-sources")]
+            {
+                use futures_lite::StreamExt;
+
+                let mut entries = async_walkdir::WalkDir::new(filemgr.base_path());
+                while let Some(entry) = entries.next().await.transpose()? {
+                    let path = entry.path();
+                    let path = path.strip_prefix(filemgr.base_path())?;
+
+                    if path
+                        .extension()
+                        .map(|extension| extension == "c")
+                        .unwrap_or(false)
+                        && !path.ends_with(".mod.c")
+                    /*&& entry
+                    .file_type()
+                    .await
+                    .map(|file_type| file_type.is_file())
+                    .unwrap_or(false)*/
+                    {
+                        if db.source(&path).is_none() {
+                            log::warn!("Orphan source: {}", path.display());
+                        }
+                    }
+                }
+            }
         }
 
         cmd => {

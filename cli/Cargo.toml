@@ -45,9 +45,17 @@ features = ["macros", "rt-multi-thread"]
 path = ".."
 default-features = false
 
+[dependencies.futures-lite]
+version = "1"
+optional = true
+
+[dependencies.async-walkdir]
+version = "0.2"
+optional = true
+
 [features]
-default = ["cache", "cbor", "lz4", "logger", "glob"]
-default-dev = ["cache", "json", "pretty", "logger", "glob"]
+default = ["cache", "cbor", "lz4", "glob"]
+default-dev = ["cache", "json", "pretty", "logger", "glob", "alert-orphan-sources"]
 
 cache = ["kquery/cache"]
 json = ["kquery/json"]
@@ -57,3 +65,6 @@ lz4 = ["kquery/lz4"]
 
 logger = ["lovely_env_logger"]
 glob = ["globset", "either"]
+
+# Show sources which does not found while indexing (for debug purpose)
+alert-orphan-sources = ["futures-lite", "async-walkdir"]
