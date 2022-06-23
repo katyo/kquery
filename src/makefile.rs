@@ -1,9 +1,14 @@
 use crate::{File, FileMgr, Path, Result};
-use std::collections::HashMap as Map;
+use std::collections::{HashMap as Map, VecDeque as Deque};
 
 pub struct MakeFile {
     lines: tokio::io::Lines<tokio::io::BufReader<File>>,
+    // module_name => condition[]
     modules: Map<String, Vec<String>>,
+    // module_name => (elements, conditions)[]
+    orphans: Map<String, Deque<(Vec<String>, Vec<String>)>>,
+    // unprocessed module
+    module: Option<String>,
 }
 
 impl MakeFile {
@@ -18,10 +23,30 @@ impl MakeFile {
         Ok(Self {
             lines,
             modules: Map::default(),
+            orphans: Map::default(),
+            module: None,
         })
     }
 
     pub async fn next_stmt(&mut self) -> Result<Option<MakeStmt>> {
+        if let Some(prefix) = &self.module {
+            if let (Some(module_conditions), Some(queue)) =
+                (self.modules.get(prefix), self.orphans.get_mut(prefix))
+            {
+                if let Some((elements, mut conditions)) = queue.pop_front() {
+                    conditions.extend(module_conditions.clone());
+                    let prefix = prefix.clone();
+                    return Ok(Some(MakeStmt::Var {
+                        prefix,
+                        elements,
+                        conditions,
+                    }));
+                }
+                self.orphans.remove(prefix);
+            }
+            self.module = None;
+        }
+
         let mut full_line: Option<String> = None;
 
         while let Some(line) = self.lines.next_line().await? {
@@ -55,12 +80,22 @@ impl MakeFile {
                         {
                             for element in elements {
                                 if let Some((module, "")) = element.rsplit_once(".o") {
+                                    if self.orphans.contains_key(module) {
+                                        self.module = Some(module.into());
+                                    }
                                     self.modules.insert(module.into(), conditions.clone());
                                 }
                             }
                         } else if let Some(module_conditions) = self.modules.get(prefix) {
                             conditions.extend(module_conditions.clone());
                         } else {
+                            if let Some(queue) = self.orphans.get_mut(prefix) {
+                                queue.push_back((elements.clone(), conditions.clone()));
+                            } else {
+                                let mut queue = Deque::default();
+                                queue.push_back((elements.clone(), conditions.clone()));
+                                self.orphans.insert(prefix.clone(), queue);
+                            }
                             continue;
                         }
                     }
