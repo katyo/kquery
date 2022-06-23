@@ -74,9 +74,9 @@ async fn main(args: Args) -> Result<()> {
                     }
                 }
 
-                fn print_filtered_list<P: AsRef<std::path::Path>, S: AsRef<str>>(
+                fn print_entries_list<P: AsRef<std::path::Path>>(
                     entries: impl Iterator<Item = P>,
-                    pattern: Option<S>,
+                    #[cfg(feature = "glob")] pattern: Option<impl AsRef<str>>,
                 ) -> Result<()> {
                     #[cfg(feature = "glob")]
                     let pattern = pattern
@@ -106,21 +106,33 @@ async fn main(args: Args) -> Result<()> {
                         #[cfg(feature = "glob")]
                         pattern,
                     } => {
-                        print_filtered_list(db.sources.keys(), pattern.as_ref())?;
+                        print_entries_list(
+                            db.sources.keys(),
+                            #[cfg(feature = "glob")]
+                            pattern.as_ref(),
+                        )?;
                     }
 
                     Cmd::Compats {
                         #[cfg(feature = "glob")]
                         pattern,
                     } => {
-                        print_filtered_list(db.compat_strs.keys(), pattern.as_ref())?;
+                        print_entries_list(
+                            db.compat_strs.keys(),
+                            #[cfg(feature = "glob")]
+                            pattern.as_ref(),
+                        )?;
                     }
 
                     Cmd::Configs {
                         #[cfg(feature = "glob")]
                         pattern,
                     } => {
-                        print_filtered_list(db.config_opts.keys(), pattern.as_ref())?;
+                        print_entries_list(
+                            db.config_opts.keys(),
+                            #[cfg(feature = "glob")]
+                            pattern.as_ref(),
+                        )?;
                     }
 
                     Cmd::Compat { compat } => {
