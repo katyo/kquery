@@ -87,16 +87,25 @@ pub struct FileMgr {
 
 impl FileMgr {
     /// Create file manager instance using specified base directory
-    pub fn new(dir: impl Into<PathBuf>) -> Result<Self> {
+    pub async fn new(dir: impl Into<PathBuf>) -> Result<Self> {
         let (soft, hard) = rlimit::Resource::NOFILE.get()?;
         let max_open_files = soft.min(hard) - 10;
 
         log::debug!("Max open files: {}", max_open_files);
 
-        Ok(Self {
+        let this = Self {
             dir: Arc::new(dir.into()),
             sem: Arc::new(Semaphore::new(max_open_files as _)),
-        })
+        };
+
+        if !this.dir_exists(".").await? {
+            anyhow::bail!(
+                "Base direcotry {} is not exists",
+                this.base_path().display()
+            );
+        }
+
+        Ok(this)
     }
 
     /// Get base directory path

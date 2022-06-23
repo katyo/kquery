@@ -11,7 +11,7 @@ async fn main(args: Args) -> Result<()> {
 
     log::trace!("Cmdline Args: {:?}", args);
 
-    let filemgr = FileMgr::new(args.source_root()?)?;
+    let filemgr = FileMgr::new(args.source_root()?).await?;
 
     match &args.command {
         Cmd::Index => {
