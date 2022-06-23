@@ -21,13 +21,13 @@ async fn main(args: Args) -> Result<()> {
 
             db.save_cache(&filemgr).await?;
 
-            println!("Done!");
-
             #[cfg(feature = "alert-orphan-sources")]
             {
                 use futures_lite::StreamExt;
 
                 let mut entries = async_walkdir::WalkDir::new(filemgr.base_path());
+                let mut count = 0usize;
+
                 while let Some(entry) = entries.next().await.transpose()? {
                     let path = entry.path();
                     let path = path.strip_prefix(filemgr.base_path())?;
@@ -41,11 +41,20 @@ async fn main(args: Args) -> Result<()> {
                         && !path.starts_with("tools")
                     {
                         if db.source(&path).is_none() {
+                            count += 1;
                             log::warn!("Orphan source: {}", path.display());
                         }
                     }
                 }
+                eprintln!("Found {} orphan sources", count);
             }
+
+            println!(
+                "Found {} sources, {} compatible strings, {} configuration options",
+                db.sources.len(),
+                db.compat_strs.len(),
+                db.config_opts.len()
+            );
         }
 
         cmd => {
