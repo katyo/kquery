@@ -40,17 +40,22 @@ $ kquery source path/to/source.c
 ## Library usage
 
 ```no_run
-use kquery::{FileMgr, MetaData};
+use kquery::{FileMgr, MetaData, Result};
 
-// Create file manager instance using path to sources
-let filemgr = FileMgr::new("path/to/sources").await?;
+#[tokio::main]
+async fn main() -> Result<()> {
+  // Create file manager instance using path to sources
+  let filemgr = FileMgr::new("path/to/sources").await?;
 
-// Create index from Linux source tree
-let metadata = MetaData::from_kbuild(&filemgr).await?;
+  // Create index from Linux source tree
+  let metadata = MetaData::from_kbuild(&filemgr).await?;
 
-// Store metadata into cache file in source tree
-metadata.save_cache(&filemgr).await?;
+  // Store metadata into cache file in source tree
+  metadata.save_cache(&filemgr).await?;
 
-// Load metadata from cache file in source tree
-let metadata = MetaData::from_cache(&filemgr).await?;
+  // Load metadata from cache file in source tree
+  let metadata = MetaData::from_cache(&filemgr).await?;
+
+  Ok(())
+}
 ```
