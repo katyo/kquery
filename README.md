@@ -14,27 +14,64 @@ Currently it consists of querying library and simple command-line tool.
 
 Create or update index first:
 
-```shell
+```sh
 $ cd path/to/linux/sources
 $ kquery index
+Found 21964 sources, 10521 compatible strings, 12519 configuration options
+```
+
+List all found sources:
+
+```sh
+$ kquery sources
+```
+
+List sources which match some pattern:
+
+```sh
+$ kquery sources drivers/**/arm/**
+```
+
+List all found compatible strings:
+
+```sh
+$ kquery compats
+```
+
+List compatible strings which match some pattern:
+
+```sh
+$ kquery compats arm,*
+```
+
+List all found configuration options:
+
+```sh
+$ kquery configs
+```
+
+List configuration options which match some pattern:
+
+```sh
+$ kquery compats ARM_*
 ```
 
 Query source info which has compatible string:
 
-```shell
-$ kquery compat compat-string
+```sh
+$ kquery compat arm,smmu-v2
 ```
 
-Query sources info related to config options:
+Query sources info related to configuration option:
 
-```shell
-$ kquery config CONFIG_OPTION
+```sh
+$ kquery config ARM_SMMU
 ```
 
 Query source info by path:
 
-```shell
-$ kquery source path/to/source.c
+```sh
+$ kquery source drivers/iommu/arm/arm-smmu/arm-smmu.c
 ```
 
 ## Library usage
