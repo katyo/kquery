@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Query tool for Linux kernel sources. Command-line interface"
 license = "MIT"
 authors = ["K <kayo@illumium.org>"]
+readme = "../README.md"
 categories = ["command-line-utilities"]
 keywords = ["linux", "kernel", "query", "kbuild", "kconfig"]
 homepage = "https://github.com/katyo/kquery"
