@@ -203,10 +203,12 @@ impl MakeStmt {
                 Self::parse_conditions(line.split_once(char::is_whitespace).unwrap().1);
 
             return Ok(Some(Self::If { conditions }));
-        } else if let Some((pfx, key, val)) = line
-            .split_once('=')
-            .and_then(|(var, val)| var.split_once('-').map(|(pfx, key)| (pfx, key, val)))
-        {
+        } else if let Some((pfx, key, val)) = line.split_once('=').and_then(|(var, val)| {
+            split_once_if(var, "-", |_, sfx| {
+                sfx.starts_with("$(") || !sfx.contains('-')
+            })
+            .map(|(pfx, key)| (pfx, key, val))
+        }) {
             let conditions =
                 Self::parse_conditions(key.trim_end_matches(|c: char| {
                     c == '+' || c == ':' || c == '?' || c.is_whitespace()
@@ -227,4 +229,19 @@ impl MakeStmt {
 
         anyhow::bail!("{:?}", line);
     }
+}
+
+fn split_once_if<'a>(
+    s: &'a str,
+    p: &'a str,
+    f: impl Fn(&'a str, &'a str) -> bool,
+) -> Option<(&'a str, &'a str)> {
+    for (idx, _) in s.match_indices(p) {
+        let a = &s[..idx];
+        let b = &s[idx + p.len()..];
+        if f(a, b) {
+            return Some((a, b));
+        }
+    }
+    None
 }
