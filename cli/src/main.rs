@@ -31,17 +31,14 @@ async fn main(args: Args) -> Result<()> {
                 while let Some(entry) = entries.next().await.transpose()? {
                     let path = entry.path();
                     let path = path.strip_prefix(filemgr.base_path())?;
+                    let path_str = path.to_string_lossy();
 
-                    if path
-                        .extension()
-                        .map(|extension| extension == "c")
-                        .unwrap_or(false)
-                        && !path.ends_with(".mod.c")
-                    /*&& entry
-                    .file_type()
-                    .await
-                    .map(|file_type| file_type.is_file())
-                    .unwrap_or(false)*/
+                    if path_str.ends_with(".c")
+                        && !path_str.ends_with(".mod.c")
+                        && !path.starts_with("Documentation")
+                        && !path.starts_with("certs")
+                        && !path.starts_with("arch")
+                        && !path.starts_with("tools")
                     {
                         if db.source(&path).is_none() {
                             log::warn!("Orphan source: {}", path.display());
