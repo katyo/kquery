@@ -56,6 +56,7 @@ optional = true
 
 [features]
 default = ["cache", "cbor", "lz4", "glob"]
+default-min = ["cache", "cbor"]
 default-dev = ["cache", "json", "pretty", "logger", "glob", "alert-orphan-sources"]
 
 cache = ["kquery/cache"]
