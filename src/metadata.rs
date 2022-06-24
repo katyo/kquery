@@ -12,6 +12,44 @@ pub struct SourceData {
     /// Compatible strings of source file
     #[cfg_attr(feature = "serde", serde(rename = "s"))]
     pub compat_strs: Set<String>,
+
+    /// Module data
+    #[cfg_attr(feature = "serde", serde(rename = "m"))]
+    pub module: Option<ModuleData>,
+}
+
+/// Data associated with module
+#[derive(Debug, Default, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct ModuleData {
+    /// Module description
+    #[cfg_attr(feature = "serde", serde(rename = "d"))]
+    pub description: String,
+
+    /// Module license
+    #[cfg_attr(feature = "serde", serde(rename = "l"))]
+    pub license: String,
+
+    /// Module parameters
+    #[cfg_attr(feature = "serde", serde(rename = "p"))]
+    pub params: Map<String, ParamData>,
+}
+
+/// Data associated with parameter
+#[derive(Debug, Default, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct ParamData {
+    /// Parameter type
+    #[cfg_attr(feature = "serde", serde(rename = "t"))]
+    pub type_: String,
+
+    /// Default value
+    #[cfg_attr(feature = "serde", serde(rename = "v"))]
+    pub default: String,
+
+    /// Parameter description
+    #[cfg_attr(feature = "serde", serde(rename = "d"))]
+    pub description: String,
 }
 
 /// Data related to configuration option
@@ -105,6 +143,7 @@ impl MetaData {
             SourceData {
                 config_opts,
                 compat_strs,
+                ..
             },
         ) in &self.sources
         {
