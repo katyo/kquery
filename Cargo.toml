@@ -23,6 +23,10 @@ version = "0.4"
 [dependencies.pin-project]
 version = "1"
 
+[dependencies.clex]
+git = "https://github.com/katyo/clex"
+version = "0.1"
+
 [dependencies.serde]
 version = "1"
 features = ["derive"]
@@ -50,6 +54,10 @@ features = ["rt", "fs", "sync", "io-util"]
 
 [dependencies.rlimit]
 version = "0.8"
+
+[dev-dependencies.tokio]
+version = "1"
+features = ["macros", "rt-multi-thread"]
 
 [features]
 default = ["cache", "cbor", "lz4"]

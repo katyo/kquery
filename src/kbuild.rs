@@ -1,4 +1,4 @@
-use crate::{Compats, FileMgr, MakeFile, MakeStmt, MetaData, Path, PathBuf, Result};
+use crate::{FileMgr, MakeFile, MakeStmt, MetaData, Path, PathBuf, Result, SourceData};
 
 use std::{
     collections::{BTreeSet as Set, VecDeque},
@@ -127,20 +127,15 @@ impl State {
         self.conditions += condition;
     }
 
-    async fn add_source(&self, path: impl AsRef<Path>) {
-        self.metadata
-            .write()
-            .await
-            .source_mut(path)
-            .add_config_opts(&self.conditions)
-    }
+    async fn add_source(&self, path: impl AsRef<Path>, data: impl Into<SourceData>) {
+        let mut data = data.into();
+        data.add_config_opts(&self.conditions);
 
-    async fn add_compats(&self, path: impl AsRef<Path>, compats: impl Into<Set<String>>) {
         self.metadata
             .write()
             .await
-            .source_mut(path)
-            .add_compat_strs(compats)
+            .sources
+            .insert(path.as_ref().into(), data);
     }
 
     async fn add_object(&self, name: impl AsRef<Path>) -> Result<()> {
@@ -148,11 +143,9 @@ impl State {
         for extension in ["c", "S"] {
             let source_path = path.with_extension(extension);
             if self.filemgr.file_exists(&source_path).await? {
-                self.add_source(&source_path).await;
-
                 if extension == "c" {
-                    match Compats::from_source(&self.filemgr, &source_path).await {
-                        Ok(compats) => self.add_compats(&source_path, compats).await,
+                    match SourceData::from_source(&self.filemgr, &source_path).await {
+                        Ok(source_data) => self.add_source(&source_path, source_data).await,
                         Err(error) => {
                             log::warn!("Unable to find compats for: {:?} due to: {}", path, error);
                         }

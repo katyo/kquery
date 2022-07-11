@@ -22,6 +22,10 @@ pub struct SourceData {
 #[derive(Debug, Default, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ModuleData {
+    /// Module authors
+    #[cfg_attr(feature = "serde", serde(rename = "a"))]
+    pub authors: Vec<String>,
+
     /// Module description
     #[cfg_attr(feature = "serde", serde(rename = "d"))]
     pub description: String,
@@ -29,6 +33,10 @@ pub struct ModuleData {
     /// Module license
     #[cfg_attr(feature = "serde", serde(rename = "l"))]
     pub license: String,
+
+    /// Module aliases
+    #[cfg_attr(feature = "serde", serde(rename = "s"))]
+    pub aliases: Vec<String>,
 
     /// Module parameters
     #[cfg_attr(feature = "serde", serde(rename = "p"))]
@@ -43,9 +51,9 @@ pub struct ParamData {
     #[cfg_attr(feature = "serde", serde(rename = "t"))]
     pub type_: String,
 
-    /// Default value
-    #[cfg_attr(feature = "serde", serde(rename = "v"))]
-    pub default: String,
+    /// Parameter permissions
+    #[cfg_attr(feature = "serde", serde(rename = "p"))]
+    pub perm: u16,
 
     /// Parameter description
     #[cfg_attr(feature = "serde", serde(rename = "d"))]
@@ -169,6 +177,17 @@ impl SourceData {
     /// Add associated compatible strings to source data
     pub fn add_compat_strs(&mut self, compat_strs: impl Into<Set<String>>) {
         self.compat_strs.extend(compat_strs.into());
+    }
+}
+
+impl ModuleData {
+    /// Check that all module fields is empty
+    pub fn is_empty(&self) -> bool {
+        self.authors.is_empty()
+            && self.description.is_empty()
+            && self.license.is_empty()
+            && self.aliases.is_empty()
+            && self.params.is_empty()
     }
 }
 
