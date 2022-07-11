@@ -1,12 +1,17 @@
 use crate::{File, FileMgr, Path, Result};
 use std::collections::{HashMap as Map, VecDeque as Deque};
 
+struct Orphan {
+    elements: Vec<String>,
+    conditions: Vec<String>,
+}
+
 pub struct MakeFile {
     lines: tokio::io::Lines<tokio::io::BufReader<File>>,
     // module_name => condition[]
     modules: Map<String, Vec<String>>,
     // module_name => (elements, conditions)[]
-    orphans: Map<String, Deque<(Vec<String>, Vec<String>)>>,
+    orphans: Map<String, Deque<Orphan>>,
     // unprocessed module
     module: Option<String>,
 }
@@ -33,7 +38,11 @@ impl MakeFile {
             if let (Some(module_conditions), Some(queue)) =
                 (self.modules.get(prefix), self.orphans.get_mut(prefix))
             {
-                if let Some((elements, mut conditions)) = queue.pop_front() {
+                if let Some(Orphan {
+                    elements,
+                    mut conditions,
+                }) = queue.pop_front()
+                {
                     conditions.extend(module_conditions.clone());
                     let prefix = prefix.clone();
                     return Ok(Some(MakeStmt::Var {
@@ -90,10 +99,16 @@ impl MakeFile {
                             conditions.extend(module_conditions.clone());
                         } else {
                             if let Some(queue) = self.orphans.get_mut(prefix) {
-                                queue.push_back((elements.clone(), conditions.clone()));
+                                queue.push_back(Orphan {
+                                    elements: elements.clone(),
+                                    conditions: conditions.clone(),
+                                });
                             } else {
                                 let mut queue = Deque::default();
-                                queue.push_back((elements.clone(), conditions.clone()));
+                                queue.push_back(Orphan {
+                                    elements: elements.clone(),
+                                    conditions: conditions.clone(),
+                                });
                                 self.orphans.insert(prefix.clone(), queue);
                             }
                             continue;

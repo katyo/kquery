@@ -1,11 +1,10 @@
 [package]
 name = "kquery"
 version = "0.1.0"
-description = "Query tool for Linux kernel sources. Library"
+description = "Query tool for Linux kernel sources (library)"
 license = "MIT"
 authors = ["K <kayo@illumium.org>"]
 readme = "README.md"
-categories = ["command-line-utilities"]
 keywords = ["linux", "kernel", "query", "kbuild", "kconfig"]
 homepage = "https://github.com/katyo/kquery"
 repository = "https://github.com/katyo/kquery"
@@ -24,7 +23,6 @@ version = "0.4"
 version = "1"
 
 [dependencies.clex]
-git = "https://github.com/katyo/clex"
 version = "0.1"
 
 [dependencies.serde]
@@ -60,20 +58,17 @@ version = "1"
 features = ["macros", "rt-multi-thread"]
 
 [features]
-default = ["cache", "cbor", "lz4"]
-default-dev = ["cache", "json", "pretty"]
+default = ["json", "cbor", "lz4"]
 
-cache = ["serde"]
-json = ["serde_json"]
-pretty = []
-cbor = ["ciborium"]
+json = ["serde", "serde_json"]
+cbor = ["serde", "ciborium"]
 lz4 = ["lz4_flex"]
 
 # Enable unstable doc-cfg feature (for docs.rs)
 doc-cfg = []
 
 [package.metadata.docs.rs]
-features = ["default-dev", "doc-cfg"]
+features = ["json", "cbor", "lz4", "doc-cfg"]
 
 [profile.release]
 opt-level = 2

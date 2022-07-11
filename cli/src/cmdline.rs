@@ -1,13 +1,21 @@
-use kquery::Result;
+use kquery::{DataCoding, DataCompress, Result};
 use std::path::PathBuf;
 
 /// Commmand-line arguments
 #[derive(Debug, structopt::StructOpt)]
 #[structopt(rename_all = "kebab-case")]
 pub struct Args {
-    /// Source root (current working directory by default)
+    /// Source root [default: current working directory]
     #[structopt(short, long)]
     source_root: Option<PathBuf>,
+
+    /// Data coding
+    #[structopt(short = "f", long, env = "KQUERY_CODING", default_value = "cbor", possible_values = DataCoding::POSSIBLE_STRS)]
+    pub coding: DataCoding,
+
+    /// Data compression
+    #[structopt(short = "z", long, env = "KQUERY_COMPRESS", default_value = "lz4", possible_values = DataCompress::POSSIBLE_STRS)]
+    pub compress: DataCompress,
 
     /// Command to run
     #[structopt(subcommand)]

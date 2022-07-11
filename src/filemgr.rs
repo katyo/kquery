@@ -85,6 +85,12 @@ pub struct FileMgr {
     sem: Arc<Semaphore>,
 }
 
+impl AsRef<Path> for FileMgr {
+    fn as_ref(&self) -> &Path {
+        &self.dir
+    }
+}
+
 impl FileMgr {
     /// Create file manager instance using specified base directory
     pub async fn new(dir: impl Into<PathBuf>) -> Result<Self> {
@@ -124,18 +130,12 @@ impl FileMgr {
 
     /// Check directory existing in base directory using relative path
     pub async fn dir_exists(&self, path: impl AsRef<Path>) -> Result<bool> {
-        Ok(tokio::fs::metadata(self.full_path(path)?)
-            .await
-            .map(|m| m.is_dir())
-            .unwrap_or(false))
+        Ok(dir_exists(self.full_path(path)?).await)
     }
 
     /// Check file existing in base directory using relative path
     pub async fn file_exists(&self, path: impl AsRef<Path>) -> Result<bool> {
-        Ok(tokio::fs::metadata(self.full_path(path)?)
-            .await
-            .map(|m| m.is_file())
-            .unwrap_or(false))
+        Ok(file_exists(self.full_path(path)?).await)
     }
 
     /// Open file in base directory using relative path
@@ -153,4 +153,20 @@ impl FileMgr {
 
         Ok(File { perm, file })
     }
+}
+
+/// Check directory existing in base directory using relative path
+pub async fn dir_exists(path: impl AsRef<Path>) -> bool {
+    tokio::fs::metadata(path)
+        .await
+        .map(|m| m.is_dir())
+        .unwrap_or(false)
+}
+
+/// Check file existing in base directory using relative path
+pub async fn file_exists(path: impl AsRef<Path>) -> bool {
+    tokio::fs::metadata(path)
+        .await
+        .map(|m| m.is_file())
+        .unwrap_or(false)
 }

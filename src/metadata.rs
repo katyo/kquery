@@ -1,4 +1,4 @@
-use crate::{FileMgr, Path, PathBuf, Result};
+use crate::{Path, PathBuf};
 use std::collections::{BTreeMap as Map, BTreeSet as Set};
 
 /// Data associated with source file
@@ -202,82 +202,5 @@ impl CompatStrData {
     /// Set associated source to compatible string data
     pub fn set_source(&mut self, source: impl Into<PathBuf>) {
         self.source = source.into();
-    }
-}
-
-#[cfg(all(feature = "cache", any(feature = "json", feature = "cbor")))]
-impl MetaData {
-    #[cfg(all(feature = "json", not(feature = "lz4")))]
-    const CACHE_FILE_NAME: &'static str = "kquery.json";
-
-    #[cfg(all(feature = "json", feature = "lz4"))]
-    const CACHE_FILE_NAME: &'static str = "kquery.json.lz4";
-
-    #[cfg(all(feature = "cbor", not(feature = "lz4")))]
-    const CACHE_FILE_NAME: &'static str = "kquery.cbor";
-
-    #[cfg(all(feature = "cbor", feature = "lz4"))]
-    const CACHE_FILE_NAME: &'static str = "kquery.cbor.lz4";
-
-    /// Load metadata from cache file
-    #[cfg_attr(
-        feature = "doc-cfg",
-        doc(cfg(all(feature = "cache", any(feature = "json", feature = "cbor"))))
-    )]
-    pub async fn from_cache(filemgr: &FileMgr) -> Result<Option<Self>> {
-        use tokio::io::AsyncReadExt;
-
-        if !filemgr.file_exists(Self::CACHE_FILE_NAME).await? {
-            return Ok(None);
-        }
-
-        let mut file = filemgr.open(Self::CACHE_FILE_NAME).await?;
-        let mut data = Vec::default();
-
-        file.read_to_end(&mut data).await?;
-
-        #[cfg(feature = "lz4_flex")]
-        let data = lz4_flex::decompress_size_prepended(&data)?;
-
-        let data = std::io::Cursor::new(data);
-
-        #[cfg(feature = "serde_json")]
-        let mut data: Self = serde_json::from_reader(data)?;
-
-        #[cfg(feature = "ciborium")]
-        let mut data: Self = ciborium::de::from_reader(data)?;
-
-        data.sync_with_sources();
-
-        Ok(Some(data))
-    }
-
-    /// Store metadata into cache file
-    #[cfg_attr(
-        feature = "doc-cfg",
-        doc(cfg(all(feature = "cache", any(feature = "json", feature = "cbor"))))
-    )]
-    pub async fn save_cache(&self, filemgr: &FileMgr) -> Result<()> {
-        use tokio::io::AsyncWriteExt;
-
-        let mut data = Vec::default();
-
-        #[cfg(all(feature = "serde_json", not(feature = "pretty")))]
-        serde_json::to_writer(&mut data, self)?;
-
-        #[cfg(all(feature = "serde_json", feature = "pretty"))]
-        serde_json::to_writer_pretty(&mut data, self)?;
-
-        #[cfg(feature = "ciborium")]
-        ciborium::ser::into_writer(self, &mut data)?;
-
-        #[cfg(feature = "lz4_flex")]
-        let data = lz4_flex::compress_prepend_size(&data);
-
-        let mut file = filemgr.create(Self::CACHE_FILE_NAME).await?;
-
-        file.write_all(&data).await?;
-
-        Ok(())
     }
 }

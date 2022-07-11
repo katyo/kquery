@@ -55,13 +55,11 @@ version = "0.2"
 optional = true
 
 [features]
-default = ["cache", "cbor", "lz4", "glob"]
-default-min = ["cache", "cbor"]
-default-dev = ["cache", "json", "pretty", "logger", "glob", "alert-orphan-sources"]
+default = ["cbor", "lz4", "glob"]
+default-min = ["cbor"]
+default-dev = ["json", "logger", "glob", "alert-orphan-sources"]
 
-cache = ["kquery/cache"]
 json = ["kquery/json"]
-pretty = ["kquery/pretty"]
 cbor = ["kquery/cbor"]
 lz4 = ["kquery/lz4"]
 

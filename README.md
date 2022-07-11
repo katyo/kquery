@@ -77,7 +77,7 @@ $ kquery source drivers/iommu/arm/arm-smmu/arm-smmu.c
 ## Library usage
 
 ```no_run
-use kquery::{FileMgr, MetaData, Result};
+use kquery::{FileMgr, MetaData, Result, DataOptions, DataCoding};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -87,11 +87,17 @@ async fn main() -> Result<()> {
   // Create index from Linux source tree
   let metadata = MetaData::from_kbuild(&filemgr).await?;
 
-  // Store metadata into cache file in source tree
-  metadata.save_cache(&filemgr).await?;
+  // Data file options
+  let opts = DataOptions {
+    coding: DataCoding::JsonPretty,
+    ..Default::default()
+  };
+
+  // Store metadata into file in source tree
+  metadata.to_file("path/to/metadata.json", &opts).await?;
 
   // Load metadata from cache file in source tree
-  let metadata = MetaData::from_cache(&filemgr).await?;
+  let metadata = MetaData::from_file("path/to/metadata.json", &opts).await?;
 
   Ok(())
 }

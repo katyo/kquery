@@ -1,7 +1,7 @@
 mod cmdline;
 
 use cmdline::{Args, Cmd};
-use kquery::{FileMgr, MetaData, Result, SourceData};
+use kquery::{DataOptions, FileMgr, MetaData, Result, SourceData};
 
 #[paw::main]
 #[tokio::main]
@@ -12,6 +12,10 @@ async fn main(args: Args) -> Result<()> {
     log::trace!("Cmdline Args: {:?}", args);
 
     let filemgr = FileMgr::new(args.source_root()?).await?;
+    let opts = DataOptions {
+        coding: args.coding,
+        compress: args.compress,
+    };
 
     match &args.command {
         Cmd::Index => {
@@ -19,7 +23,7 @@ async fn main(args: Args) -> Result<()> {
 
             let db = MetaData::from_kbuild(&filemgr).await?;
 
-            db.save_cache(&filemgr).await?;
+            db.to_dir(&filemgr, &opts).await?;
 
             #[cfg(feature = "alert-orphan-sources")]
             {
@@ -58,7 +62,7 @@ async fn main(args: Args) -> Result<()> {
         }
 
         cmd => {
-            if let Some(db) = MetaData::from_cache(&filemgr).await? {
+            if let Some(db) = MetaData::from_dir(&filemgr, &opts).await? {
                 fn print_source_data(ident: &str, source_data: &SourceData) {
                     if !source_data.config_opts.is_empty() {
                         println!("{}Configuration options:", ident);
