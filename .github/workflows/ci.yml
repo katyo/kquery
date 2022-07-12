@@ -66,7 +66,7 @@ jobs:
           DOCS_RS: 1
         with:
           command: doc
-          args: --features cache,cbor,doc-cfg
+          args: --all-features
       - name: Upload docs
         uses: actions/upload-artifact@v2
         with:
@@ -122,43 +122,45 @@ jobs:
             os: ubuntu-latest
             rust: stable
             target: x86_64-unknown-linux-gnu
+            features: json
+          - task: features
+            os: ubuntu-latest
+            rust: stable
+            target: x86_64-unknown-linux-gnu
+            features: json,lz4
+          - task: features
+            os: ubuntu-latest
+            rust: stable
+            target: x86_64-unknown-linux-gnu
+            features: cbor
+          - task: features
+            os: ubuntu-latest
+            rust: stable
+            target: x86_64-unknown-linux-gnu
+            features: cbor,lz4
+          - task: features
+            os: ubuntu-latest
+            rust: stable
+            target: x86_64-unknown-linux-gnu
             features: default
-          - task: features
-            os: ubuntu-latest
-            rust: stable
-            target: x86_64-unknown-linux-gnu
-            features: cache,json
-          - task: features
-            os: ubuntu-latest
-            rust: stable
-            target: x86_64-unknown-linux-gnu
-            features: cache,json,lz4
-          - task: features
-            os: ubuntu-latest
-            rust: stable
-            target: x86_64-unknown-linux-gnu
-            features: cache,cbor
-          - task: features
-            os: ubuntu-latest
-            rust: stable
-            target: x86_64-unknown-linux-gnu
-            features: cache,cbor,lz4
+
           # Test channels
           - task: channels
             os: ubuntu-latest
             rust: stable
             target: x86_64-unknown-linux-gnu
-            features: cache,cbor,lz4
+            features: default
           - task: channels
             os: ubuntu-latest
             rust: beta
             target: x86_64-unknown-linux-gnu
-            features: cache,cbor,lz4
+            features: default
           - task: channels
             os: ubuntu-latest
             rust: nightly
             target: x86_64-unknown-linux-gnu
-            features: cache,cbor,lz4
+            features: default
+
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
