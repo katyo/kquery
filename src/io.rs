@@ -40,6 +40,25 @@ impl core::str::FromStr for DataCoding {
     }
 }
 
+impl AsRef<str> for DataCoding {
+    fn as_ref(&self) -> &str {
+        match self {
+            #[cfg(feature = "json")]
+            Self::Json => "json",
+            #[cfg(feature = "json")]
+            Self::JsonPretty => "json-pretty",
+            #[cfg(feature = "cbor")]
+            Self::Cbor => "cbor",
+        }
+    }
+}
+
+impl core::fmt::Display for DataCoding {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        f.write_str(self.as_ref())
+    }
+}
+
 impl DataCoding {
     pub const POSSIBLE_STRS: &'static [&'static str] = &[
         #[cfg(feature = "json")]
@@ -73,9 +92,25 @@ impl core::str::FromStr for DataCompress {
         Ok(match s {
             "n" | "no" => Self::No,
             #[cfg(feature = "lz4")]
-            "c" | "cbor" => Self::Lz4,
+            "z" | "lz4" => Self::Lz4,
             _ => anyhow::bail!("Insupported data compression: {}", s),
         })
+    }
+}
+
+impl AsRef<str> for DataCompress {
+    fn as_ref(&self) -> &str {
+        match self {
+            Self::No => "no",
+            #[cfg(feature = "lz4")]
+            Self::Lz4 => "lz4",
+        }
+    }
+}
+
+impl core::fmt::Display for DataCompress {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+        f.write_str(self.as_ref())
     }
 }
 

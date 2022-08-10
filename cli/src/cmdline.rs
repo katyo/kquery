@@ -2,23 +2,23 @@ use kquery::{DataCoding, DataCompress, Result};
 use std::path::PathBuf;
 
 /// Commmand-line arguments
-#[derive(Debug, structopt::StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Debug, clap::Parser)]
+#[clap(author, version, about)]
 pub struct Args {
     /// Source root [default: current working directory]
-    #[structopt(short, long)]
+    #[clap(short, long, value_parser)]
     source_root: Option<PathBuf>,
 
     /// Data coding
-    #[structopt(short = "f", long, env = "KQUERY_CODING", default_value = "cbor", possible_values = DataCoding::POSSIBLE_STRS)]
+    #[clap(short = 'f', long, env = "KQUERY_CODING", value_parser, default_value_t = DataCoding::default(), possible_values = DataCoding::POSSIBLE_STRS)]
     pub coding: DataCoding,
 
     /// Data compression
-    #[structopt(short = "z", long, env = "KQUERY_COMPRESS", default_value = "lz4", possible_values = DataCompress::POSSIBLE_STRS)]
+    #[clap(short = 'z', long, env = "KQUERY_COMPRESS", value_parser, default_value_t = DataCompress::default(), possible_values = DataCompress::POSSIBLE_STRS)]
     pub compress: DataCompress,
 
     /// Command to run
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     pub command: Cmd,
 }
 
@@ -33,61 +33,53 @@ impl Args {
 }
 
 /// Commmand-line arguments
-#[derive(Debug, structopt::StructOpt)]
-#[structopt(rename_all = "kebab-case")]
+#[derive(Debug, clap::Subcommand)]
 pub enum Cmd {
     /// Create or update index
-    #[structopt()]
     Index,
 
     /// List of processed sources
-    #[structopt()]
     Sources {
         #[cfg(feature = "glob")]
         /// Optional pattern to filter paths
-        #[structopt(name = "glob-pattern")]
+        #[clap(name = "glob-pattern")]
         pattern: Option<String>,
     },
 
     /// List of known compatible string
-    #[structopt()]
     Compats {
         #[cfg(feature = "glob")]
         /// Optional pattern to filter strings
-        #[structopt()]
+        #[clap(value_parser)]
         pattern: Option<String>,
     },
 
     /// List of known configuration options
-    #[structopt()]
     Configs {
         #[cfg(feature = "glob")]
         /// Optional pattern to filter options
-        #[structopt()]
+        #[clap(value_parser)]
         pattern: Option<String>,
     },
 
     /// Query source info by compatible string
-    #[structopt()]
     Compat {
         /// Compatible string
-        #[structopt(name = "compat-string")]
+        #[clap(value_parser, name = "compat-string")]
         compat: String,
     },
 
     /// Query sources info by configuraton option
-    #[structopt()]
     Config {
         /// Configuration option
-        #[structopt(name = "CONFIG_OPTION")]
+        #[clap(value_parser, name = "CONFIG_OPTION")]
         config: String,
     },
 
     /// Query source info by path
-    #[structopt()]
     Source {
         /// Source path
-        #[structopt(name = "path/to/source.c")]
+        #[clap(value_parser, name = "path/to/source.c")]
         source: PathBuf,
     },
 }

@@ -15,12 +15,9 @@ edition = "2021"
 name = "kquery"
 path = "src/main.rs"
 
-[dependencies.paw]
-version = "1"
-
-[dependencies.structopt]
-version = "0.3"
-features = ["paw"]
+[dependencies.clap]
+version = "3"
+features = ["env", "derive"]
 
 [dependencies.lovely_env_logger]
 version = "0.5"

@@ -3,12 +3,12 @@ mod cmdline;
 use cmdline::{Args, Cmd};
 use kquery::{DataOptions, FileMgr, MetaData, Result, SourceData};
 
-#[paw::main]
 #[tokio::main]
-async fn main(args: Args) -> Result<()> {
+async fn main() -> Result<()> {
     #[cfg(feature = "lovely_env_logger")]
     lovely_env_logger::init_default();
 
+    let args: Args = clap::Parser::parse();
     log::trace!("Cmdline Args: {:?}", args);
 
     let filemgr = FileMgr::new(args.source_root()?).await?;
