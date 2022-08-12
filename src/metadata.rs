@@ -6,15 +6,24 @@ use std::collections::{BTreeMap as Map, BTreeSet as Set};
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct SourceData {
     /// Configuration options associated with source file
-    #[cfg_attr(feature = "serde", serde(rename = "o"))]
+    #[cfg_attr(
+        feature = "serde",
+        serde(rename = "o", default, skip_serializing_if = "Set::is_empty")
+    )]
     pub config_opts: Set<String>,
 
     /// Compatible strings of source file
-    #[cfg_attr(feature = "serde", serde(rename = "s"))]
+    #[cfg_attr(
+        feature = "serde",
+        serde(rename = "s", default, skip_serializing_if = "Set::is_empty")
+    )]
     pub compat_strs: Set<String>,
 
     /// Module data
-    #[cfg_attr(feature = "serde", serde(rename = "m"))]
+    #[cfg_attr(
+        feature = "serde",
+        serde(rename = "m", default, skip_serializing_if = "Option::is_none")
+    )]
     pub module: Option<ModuleData>,
 }
 
@@ -23,23 +32,38 @@ pub struct SourceData {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ModuleData {
     /// Module authors
-    #[cfg_attr(feature = "serde", serde(rename = "a"))]
+    #[cfg_attr(
+        feature = "serde",
+        serde(rename = "a", default, skip_serializing_if = "Vec::is_empty")
+    )]
     pub authors: Vec<String>,
 
     /// Module description
-    #[cfg_attr(feature = "serde", serde(rename = "d"))]
+    #[cfg_attr(
+        feature = "serde",
+        serde(rename = "d", default, skip_serializing_if = "String::is_empty")
+    )]
     pub description: String,
 
     /// Module license
-    #[cfg_attr(feature = "serde", serde(rename = "l"))]
+    #[cfg_attr(
+        feature = "serde",
+        serde(rename = "l", default, skip_serializing_if = "String::is_empty")
+    )]
     pub license: String,
 
     /// Module aliases
-    #[cfg_attr(feature = "serde", serde(rename = "s"))]
+    #[cfg_attr(
+        feature = "serde",
+        serde(rename = "s", default, skip_serializing_if = "Vec::is_empty")
+    )]
     pub aliases: Vec<String>,
 
     /// Module parameters
-    #[cfg_attr(feature = "serde", serde(rename = "p"))]
+    #[cfg_attr(
+        feature = "serde",
+        serde(rename = "p", default, skip_serializing_if = "Map::is_empty")
+    )]
     pub params: Map<String, ParamData>,
 }
 
@@ -56,7 +80,10 @@ pub struct ParamData {
     pub perm: u16,
 
     /// Parameter description
-    #[cfg_attr(feature = "serde", serde(rename = "d"))]
+    #[cfg_attr(
+        feature = "serde",
+        serde(rename = "d", default, skip_serializing_if = "String::is_empty")
+    )]
     pub description: String,
 }
 
