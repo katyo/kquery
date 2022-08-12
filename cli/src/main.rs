@@ -11,19 +11,19 @@ async fn main() -> Result<()> {
     let args: Args = clap::Parser::parse();
     log::trace!("Cmdline Args: {:?}", args);
 
-    let filemgr = FileMgr::new(args.source_root()?).await?;
-    let opts = DataOptions {
-        coding: args.coding,
-        compress: args.compress,
-    };
-
     match &args.command {
-        Cmd::Index => {
+        Cmd::Index {
+            coding, compress, ..
+        } => {
+            let opts = DataOptions::new(coding, compress);
+
+            let filemgr = FileMgr::new(args.source()?).await?;
+
             println!("Creating index for {:?}...", filemgr.base_path());
 
             let db = MetaData::from_kbuild(&filemgr).await?;
 
-            db.to_dir(&filemgr, &opts).await?;
+            db.to_path(args.data_path()?, &opts).await?;
 
             #[cfg(feature = "alert-orphan-sources")]
             {
@@ -43,11 +43,10 @@ async fn main() -> Result<()> {
                         && !path.starts_with("certs")
                         && !path.starts_with("arch")
                         && !path.starts_with("tools")
+                        && db.source(&path).is_none()
                     {
-                        if db.source(&path).is_none() {
-                            count += 1;
-                            log::warn!("Orphan source: {}", path.display());
-                        }
+                        count += 1;
+                        log::warn!("Orphan source: {}", path.display());
                     }
                 }
                 eprintln!("Found {} orphan sources", count);
@@ -62,7 +61,7 @@ async fn main() -> Result<()> {
         }
 
         cmd => {
-            if let Some(db) = MetaData::from_dir(&filemgr, &opts).await? {
+            if let Some(db) = MetaData::from_path(args.data_path()?, None).await? {
                 fn print_source_data(ident: &str, source_data: &SourceData) {
                     if !source_data.config_opts.is_empty() {
                         println!("{}Configuration options:", ident);
@@ -104,7 +103,7 @@ async fn main() -> Result<()> {
                 }
 
                 match cmd {
-                    Cmd::Index => unreachable!(),
+                    Cmd::Index { .. } => unreachable!(),
 
                     Cmd::Sources {
                         #[cfg(feature = "glob")]

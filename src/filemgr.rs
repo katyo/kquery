@@ -6,6 +6,7 @@ use std::{
     pin::Pin,
     sync::Arc,
     task::{Context, Poll},
+    time::SystemTime,
 };
 use tokio::{
     io::{AsyncRead, AsyncSeek, AsyncWrite, ReadBuf},
@@ -155,7 +156,7 @@ impl FileMgr {
     }
 }
 
-/// Check directory existing in base directory using relative path
+/// Check directory existing
 pub async fn dir_exists(path: impl AsRef<Path>) -> bool {
     tokio::fs::metadata(path)
         .await
@@ -163,10 +164,15 @@ pub async fn dir_exists(path: impl AsRef<Path>) -> bool {
         .unwrap_or(false)
 }
 
-/// Check file existing in base directory using relative path
+/// Check file existing
 pub async fn file_exists(path: impl AsRef<Path>) -> bool {
     tokio::fs::metadata(path)
         .await
         .map(|m| m.is_file())
         .unwrap_or(false)
+}
+
+/// Get last modification time of file
+pub async fn file_mtime(path: impl AsRef<Path>) -> Option<SystemTime> {
+    tokio::fs::metadata(path).await.ok()?.modified().ok()
 }

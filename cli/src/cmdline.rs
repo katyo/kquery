@@ -5,17 +5,9 @@ use std::path::PathBuf;
 #[derive(Debug, clap::Parser)]
 #[clap(author, version, about)]
 pub struct Args {
-    /// Source root [default: current working directory]
+    /// Data path [default: current working directory]
     #[clap(short, long, value_parser)]
-    source_root: Option<PathBuf>,
-
-    /// Data coding
-    #[clap(short = 'f', long, env = "KQUERY_CODING", value_parser, default_value_t = DataCoding::default(), possible_values = DataCoding::POSSIBLE_STRS)]
-    pub coding: DataCoding,
-
-    /// Data compression
-    #[clap(short = 'z', long, env = "KQUERY_COMPRESS", value_parser, default_value_t = DataCompress::default(), possible_values = DataCompress::POSSIBLE_STRS)]
-    pub compress: DataCompress,
+    data_path: Option<PathBuf>,
 
     /// Command to run
     #[clap(subcommand)]
@@ -23,12 +15,24 @@ pub struct Args {
 }
 
 impl Args {
-    pub fn source_root(&self) -> Result<PathBuf> {
-        Ok(if let Some(path) = &self.source_root {
+    pub fn data_path(&self) -> Result<PathBuf> {
+        Ok(if let Some(path) = &self.data_path {
             path.clone()
         } else {
             std::env::current_dir()?
         })
+    }
+
+    pub fn source(&self) -> Result<PathBuf> {
+        if let Cmd::Index {
+            source: Some(source),
+            ..
+        } = &self.command
+        {
+            Ok(source.clone())
+        } else {
+            self.data_path()
+        }
     }
 }
 
@@ -36,7 +40,19 @@ impl Args {
 #[derive(Debug, clap::Subcommand)]
 pub enum Cmd {
     /// Create or update index
-    Index,
+    Index {
+        /// Source root directory [default: data path]
+        #[clap(short, long, value_parser)]
+        source: Option<PathBuf>,
+
+        /// Data coding
+        #[clap(short = 'f', long, env = "KQUERY_CODING", value_parser, default_value_t = DataCoding::default(), possible_values = DataCoding::POSSIBLE_STRS)]
+        coding: DataCoding,
+
+        /// Data compression
+        #[clap(short = 'z', long, env = "KQUERY_COMPRESS", value_parser, default_value_t = DataCompress::default(), possible_values = DataCompress::POSSIBLE_STRS)]
+        compress: DataCompress,
+    },
 
     /// List of processed sources
     Sources {
