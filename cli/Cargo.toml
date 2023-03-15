@@ -16,11 +16,11 @@ name = "kquery"
 path = "src/main.rs"
 
 [dependencies.clap]
-version = "3"
-features = ["env", "derive"]
+version = "4"
+features = ["env", "derive", "string"]
 
 [dependencies.lovely_env_logger]
-version = "0.5"
+version = "0.6"
 optional = true
 
 [dependencies.log]
@@ -42,6 +42,7 @@ features = ["macros", "rt-multi-thread"]
 [dependencies.kquery]
 path = ".."
 default-features = false
+features = ["clap"]
 
 [dependencies.futures-lite]
 version = "1"
@@ -52,7 +53,7 @@ version = "0.2"
 optional = true
 
 [features]
-default = ["cbor", "lz4", "glob"]
+default = ["cbor", "lz4", "glob", "web"]
 default-min = ["cbor"]
 default-dev = ["json", "logger", "glob", "alert-orphan-sources"]
 

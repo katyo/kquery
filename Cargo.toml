@@ -39,7 +39,12 @@ version = "0.2"
 optional = true
 
 [dependencies.lz4_flex]
-version = "0.9"
+version = "0.10"
+optional = true
+
+[dependencies.clap]
+version = "4"
+features = ["derive"]
 optional = true
 
 [dependencies.log]
@@ -51,7 +56,7 @@ version = "1"
 features = ["rt", "fs", "sync", "io-util"]
 
 [dependencies.rlimit]
-version = "0.8"
+version = "0.9"
 
 [dev-dependencies.tokio]
 version = "1"

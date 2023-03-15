@@ -4,6 +4,7 @@ use crate::{filemgr, Error, MetaData, Path, PathBuf, Result};
 #[cfg(any(feature = "json", feature = "cbor"))]
 #[cfg_attr(feature = "doc-cfg", doc(cfg(any(feature = "json", feature = "cbor"))))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, educe::Educe)]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 #[educe(Default)]
 pub enum DataCoding {
     /// JSON format
@@ -79,6 +80,7 @@ impl DataCoding {
 /// Metadata compression
 #[cfg_attr(feature = "doc-cfg", doc(cfg(any(feature = "json", feature = "cbor"))))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, educe::Educe)]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 #[educe(Default)]
 pub enum DataCompress {
     /// No compress

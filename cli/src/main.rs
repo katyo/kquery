@@ -13,17 +13,20 @@ async fn main() -> Result<()> {
 
     match &args.command {
         Cmd::Index {
-            coding, compress, ..
+            source,
+            coding,
+            compress,
+            ..
         } => {
             let opts = DataOptions::new(coding, compress);
 
-            let filemgr = FileMgr::new(args.source()?).await?;
+            let filemgr = FileMgr::new(source).await?;
 
             println!("Creating index for {:?}...", filemgr.base_path());
 
             let db = MetaData::from_kbuild(&filemgr).await?;
 
-            db.to_path(args.data_path()?, &opts).await?;
+            db.to_path(&args.data_path, &opts).await?;
 
             #[cfg(feature = "alert-orphan-sources")]
             {
@@ -61,7 +64,7 @@ async fn main() -> Result<()> {
         }
 
         cmd => {
-            if let Some(db) = MetaData::from_path(args.data_path()?, None).await? {
+            if let Some(db) = MetaData::from_path(&args.data_path, None).await? {
                 fn print_source_data(ident: &str, source_data: &SourceData) {
                     if !source_data.config_opts.is_empty() {
                         println!("{}Configuration options:", ident);

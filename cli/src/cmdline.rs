@@ -1,56 +1,34 @@
-use kquery::{DataCoding, DataCompress, Result};
+use kquery::{DataCoding, DataCompress};
 use std::path::PathBuf;
 
 /// Commmand-line arguments
 #[derive(Debug, clap::Parser)]
 #[clap(author, version, about)]
 pub struct Args {
-    /// Data path [default: current working directory]
-    #[clap(short, long, value_parser)]
-    data_path: Option<PathBuf>,
+    /// Data path
+    #[arg(short, long, value_hint = clap::ValueHint::DirPath, default_value = CurrentDir)]
+    pub data_path: PathBuf,
 
     /// Command to run
     #[clap(subcommand)]
     pub command: Cmd,
 }
 
-impl Args {
-    pub fn data_path(&self) -> Result<PathBuf> {
-        Ok(if let Some(path) = &self.data_path {
-            path.clone()
-        } else {
-            std::env::current_dir()?
-        })
-    }
-
-    pub fn source(&self) -> Result<PathBuf> {
-        if let Cmd::Index {
-            source: Some(source),
-            ..
-        } = &self.command
-        {
-            Ok(source.clone())
-        } else {
-            self.data_path()
-        }
-    }
-}
-
 /// Commmand-line arguments
-#[derive(Debug, clap::Subcommand)]
+#[derive(Debug, clap::Parser)]
 pub enum Cmd {
     /// Create or update index
     Index {
-        /// Source root directory [default: data path]
-        #[clap(short, long, value_parser)]
-        source: Option<PathBuf>,
+        /// Source root directory
+        #[arg(short, long, value_hint = clap::ValueHint::DirPath, default_value = CurrentDir)]
+        source: PathBuf,
 
         /// Data coding
-        #[clap(short = 'f', long, env = "KQUERY_CODING", value_parser, default_value_t = DataCoding::default(), possible_values = DataCoding::POSSIBLE_STRS)]
+        #[arg(short = 'f', long, env = "KQUERY_CODING", value_enum, default_value_t = DataCoding::default())]
         coding: DataCoding,
 
         /// Data compression
-        #[clap(short = 'z', long, env = "KQUERY_COMPRESS", value_parser, default_value_t = DataCompress::default(), possible_values = DataCompress::POSSIBLE_STRS)]
+        #[arg(short = 'z', long, env = "KQUERY_COMPRESS", value_enum, default_value_t = DataCompress::default())]
         compress: DataCompress,
     },
 
@@ -58,7 +36,7 @@ pub enum Cmd {
     Sources {
         #[cfg(feature = "glob")]
         /// Optional pattern to filter paths
-        #[clap(name = "glob-pattern")]
+        #[arg(name = "glob-pattern")]
         pattern: Option<String>,
     },
 
@@ -66,7 +44,7 @@ pub enum Cmd {
     Compats {
         #[cfg(feature = "glob")]
         /// Optional pattern to filter strings
-        #[clap(value_parser)]
+        #[arg(value_parser)]
         pattern: Option<String>,
     },
 
@@ -74,28 +52,39 @@ pub enum Cmd {
     Configs {
         #[cfg(feature = "glob")]
         /// Optional pattern to filter options
-        #[clap(value_parser)]
+        #[arg(value_parser)]
         pattern: Option<String>,
     },
 
     /// Query source info by compatible string
     Compat {
         /// Compatible string
-        #[clap(value_parser, name = "compat-string")]
+        #[arg(value_parser, name = "compat-string")]
         compat: String,
     },
 
     /// Query sources info by configuraton option
     Config {
         /// Configuration option
-        #[clap(value_parser, name = "CONFIG_OPTION")]
+        #[arg(value_parser, name = "CONFIG_OPTION")]
         config: String,
     },
 
     /// Query source info by path
     Source {
         /// Source path
-        #[clap(value_parser, name = "path/to/source.c")]
+        #[arg(value_parser, name = "path/to/source.c")]
         source: PathBuf,
     },
+}
+
+struct CurrentDir;
+
+impl clap::builder::IntoResettable<clap::builder::OsStr> for CurrentDir {
+    fn into_resettable(self) -> clap::builder::Resettable<clap::builder::OsStr> {
+        std::env::current_dir()
+            .map(|path| path.into_os_string().into())
+            .map(clap::builder::Resettable::Value)
+            .unwrap_or(clap::builder::Resettable::Reset)
+    }
 }
